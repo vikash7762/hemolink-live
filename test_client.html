@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HemoLink Donor App</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; text-align: center; }
+        #status { font-weight: bold; color: gray; }
+        #messages { margin-top: 20px; border: 1px solid #ddd; padding: 10px; height: 200px; overflow-y: auto; background: #f9f9f9; }
+        .alert { color: red; font-weight: bold; padding: 5px; border-bottom: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>🩸 HemoLink Donor View</h1>
+    <p>Enter your User ID to go online:</p>
+    
+    <input type="text" id="userId" placeholder="Paste User ID here" style="padding: 10px; width: 300px;">
+    <button onclick="connect()" style="padding: 10px; background: #e74c3c; color: white; border: none; cursor: pointer;">Go Online</button>
+
+    <p>Status: <span id="status">Disconnected</span></p>
+
+    <h3>🔔 Notifications:</h3>
+    <div id="messages"></div>
+
+    <script>
+        var ws = null;
+
+        function connect() {
+            var userId = document.getElementById("userId").value;
+            if (!userId) { alert("Please enter a User ID!"); return; }
+
+            // Connect to your Python Backend via WebSockets
+            ws = new WebSocket("ws://127.0.0.1:8000/ws/" + userId);
+
+            ws.onopen = function() {
+                document.getElementById("status").innerText = "✅ Connected (Waiting for alerts...)";
+                document.getElementById("status").style.color = "green";
+            };
+
+            ws.onmessage = function(event) {
+                var msgDiv = document.getElementById("messages");
+                var newAlert = document.createElement("div");
+                newAlert.className = "alert";
+                newAlert.innerText = "🚨 " + event.data;
+                msgDiv.appendChild(newAlert);
+                
+                // Play a generic notification sound (optional)
+                alert("NEW EMERGENCY ALERT: " + event.data);
+            };
+
+            ws.onclose = function() {
+                document.getElementById("status").innerText = "❌ Disconnected";
+                document.getElementById("status").style.color = "red";
+            };
+        }
+    </script>
+</body>
+</html>

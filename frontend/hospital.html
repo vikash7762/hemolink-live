@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HemoLink - Hospital Command</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #c0392b; 
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: #dfe6e9;
+            margin: 0; 
+            min-height: 100vh;
+            display: flex; justify-content: center; align-items: center; padding: 20px;
+        }
+        .dashboard-frame {
+            width: 100%; max-width: 800px;
+            background: var(--glass);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        .logo-section { display: flex; align-items: center; gap: 10px; }
+        .logo { font-size: 30px; }
+        h1 { margin: 0; color: #2d3436; font-size: 24px; font-weight: 600; }
+        .status-badge { background: #2ed573; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+
+        .control-panel { display: flex; gap: 15px; background: #f1f2f6; padding: 20px; border-radius: 16px; margin-bottom: 20px; align-items: center; }
+        select { padding: 15px; border: 2px solid #ddd; border-radius: 12px; font-size: 16px; flex: 1; outline: none; }
+        button { padding: 16px 30px; background: var(--primary); color: white; font-weight: 600; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; transition: 0.3s; flex: 2; box-shadow: 0 4px 15px rgba(192, 57, 43, 0.4); }
+        button:hover { background: #a93226; transform: translateY(-2px); }
+        button:disabled { background: #95a5a6; cursor: not-allowed; box-shadow: none; transform: none;}
+
+        .grid-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        #map { height: 350px; width: 100%; border-radius: 16px; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .log-panel { background: #2d3436; color: #00cec9; padding: 15px; border-radius: 16px; height: 350px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 12px; border: 4px solid #b2bec3; }
+        .log-item { margin-bottom: 8px; border-bottom: 1px solid #636e72; padding-bottom: 5px; }
+        .log-time { color: #74b9ff; font-weight: bold; }
+        @media (max-width: 600px) { .grid-layout { grid-template-columns: 1fr; } .control-panel { flex-direction: column; } button { width: 100%; } }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-frame">
+    <div class="header">
+        <div class="logo-section"><span class="logo">🏥</span><div><h1>City Hospital</h1><div style="font-size:12px; color:gray;">Emergency Command Center</div></div></div>
+        <div id="connectionStatus" class="status-badge">● System Ready</div>
+    </div>
+
+    <div class="control-panel">
+        <select id="bloodGroup">
+            <option value="O+">Requesting: O+</option>
+            <option value="O-">Requesting: O-</option>
+            <option value="A+">Requesting: A+</option>
+            <option value="A-">Requesting: A-</option>
+            <option value="B+">Requesting: B+</option>
+            <option value="B-">Requesting: B-</option>
+            <option value="AB+">Requesting: AB+</option>
+            <option value="AB-">Requesting: AB-</option>
+        </select>
+        <button id="sosBtn" onclick="sendSOS()">📡 BROADCAST SOS SIGNAL</button>
+    </div>
+
+    <div class="grid-layout">
+        <div id="map"></div>
+        <div id="log" class="log-panel"><div class="log-item">> Initializing Satellite Link...</div></div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    let hospitalLat = 28.6150; 
+    let hospitalLng = 77.2100;
+    let map = null;
+
+    function initializeSystem() {
+        if (!navigator.geolocation) {
+            log("⚠️ GPS not supported. Using Default.");
+            initMap(hospitalLat, hospitalLng);
+            return;
+        }
+        log("🛰️ Acquiring GPS Coordinates...");
+        navigator.geolocation.getCurrentPosition((position) => {
+            hospitalLat = position.coords.latitude;
+            hospitalLng = position.coords.longitude;
+            log(`✅ Location Locked: ${hospitalLat.toFixed(4)}, ${hospitalLng.toFixed(4)}`);
+            initMap(hospitalLat, hospitalLng);
+            connectHospitalSocket();
+        }, () => {
+            log("⚠️ GPS Denied. Using Default.");
+            initMap(hospitalLat, hospitalLng);
+            connectHospitalSocket();
+        });
+    }
+
+    function initMap(lat, lng) {
+        map = L.map('map').setView([lat, lng], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        var redIcon = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/markers/marker-icon-2x-red.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34] });
+        L.marker([lat, lng], {icon: redIcon}).addTo(map).bindPopup("<b>🏥 THIS HOSPITAL</b>").openPopup();
+    }
+
+    // UPDATED SOS: Uses Relative Path "/"
+    async function sendSOS() {
+        const bloodType = document.getElementById("bloodGroup").value;
+        const btn = document.getElementById("sosBtn");
+        btn.disabled = true;
+        btn.innerText = "⏳ Transmitting...";
+        btn.style.background = "#e67e22";
+        log(`📡 Broadcasting Alert: ${bloodType}...`);
+
+        try {
+            await fetch("/request-blood", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    requester_name: "City Hospital",
+                    blood_group_needed: bloodType,
+                    location: { type: "Point", coordinates: [hospitalLng, hospitalLat] }
+                })
+            });
+            log("✅ Signal Sent! Monitoring responses...");
+        } catch (e) { log("❌ Error: Server Unreachable"); }
+
+        setTimeout(() => { btn.disabled = false; btn.innerText = "📡 BROADCAST SOS SIGNAL"; btn.style.background = ""; }, 3000);
+    }
+
+    // UPDATED WEBSOCKET: Smart Protocol Detection
+    function connectHospitalSocket() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
+        const ws = new WebSocket(`${protocol}//${host}/ws/hospital_admin`);
+        
+        ws.onopen = () => { log("🟢 Connected to Network"); document.getElementById("connectionStatus").innerText = "● Online"; };
+        ws.onmessage = (event) => { log(`🎉 ${event.data}`); alert("HERO FOUND: " + event.data); };
+        ws.onclose = () => { log("🔴 Network Disconnected"); document.getElementById("connectionStatus").innerText = "● Offline"; document.getElementById("connectionStatus").style.background = "red"; };
+    }
+
+    function log(msg) {
+        const logDiv = document.getElementById("log");
+        const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+        logDiv.innerHTML = `<div class="log-item"><span class="log-time">[${time}]</span> ${msg}</div>` + logDiv.innerHTML;
+    }
+
+    initializeSystem();
+</script>
+</body>
+</html>

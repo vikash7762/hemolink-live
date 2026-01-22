@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HemoLink - Life Saver</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* MODERN UI VARIABLES */
+        :root {
+            --primary: #ff4757;
+            --primary-dark: #e84118;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: #f1f2f6; 
+            margin: 0; 
+            min-height: 100vh;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 20px;
+        }
+
+        .phone-frame {
+            width: 100%;
+            max-width: 400px;
+            background: var(--glass);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        /* HEADER */
+        .header { text-align: center; margin-bottom: 30px; }
+        .logo { font-size: 40px; margin-bottom: 5px; display: block; animation: heartbeat 2s infinite; }
+        h1 { margin: 0; color: #2f3542; font-weight: 600; letter-spacing: -1px; }
+        p.subtitle { color: #a4b0be; margin-top: 5px; font-size: 14px; }
+
+        /* INPUTS */
+        .form-group { margin-bottom: 15px; }
+        input, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #dfe4ea;
+            border-radius: 12px;
+            font-size: 15px;
+            background: #fdfdfd;
+            transition: 0.3s;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(255, 71, 87, 0.1);
+        }
+
+        /* BUTTONS */
+        button {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+        }
+        button:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        button:disabled { background: #ced6e0; cursor: not-allowed; box-shadow: none; transform: none;}
+
+        /* ANIMATIONS */
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            10% { transform: scale(1.1); }
+            20% { transform: scale(1); }
+            100% { transform: scale(1); }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #dashboardSection { animation: slideUp 0.5s ease; }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            background: #eccc68;
+            color: #fff;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .status-online { background: #2ed573; box-shadow: 0 2px 10px rgba(46, 213, 115, 0.3); }
+
+        /* MAP & ALERTS */
+        #map { 
+            height: 280px; 
+            width: 100%; 
+            border-radius: 16px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border: 4px solid white;
+        }
+
+        .alert-box {
+            background: #fff0f1;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            animation: slideUp 0.3s ease;
+        }
+        .hero-btn { background: white; color: var(--primary); border: 2px solid var(--primary); margin-top: 10px; }
+        .hero-btn:hover { background: var(--primary); color: white; }
+
+        .hidden { display: none; }
+        .footer { text-align: center; margin-top: 20px; font-size: 11px; color: #ccc; }
+    </style>
+</head>
+<body>
+
+<div class="phone-frame">
+    <div class="header">
+        <span class="logo">🩸</span>
+        <h1>HemoLink</h1>
+        <p class="subtitle">Emergency Blood Network</p>
+    </div>
+
+    <div id="registerSection">
+        <div class="form-group"><input type="text" id="name" placeholder="Enter Full Name"></div>
+        <div class="form-group"><input type="text" id="phone" placeholder="Mobile Number"></div>
+        <div class="form-group">
+            <select id="bloodGroup">
+                <option value="">Select Blood Group</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+            </select>
+        </div>
+        <button onclick="registerUser()" id="joinBtn">Join Network</button>
+        <p style="text-align:center; font-size:12px; color:#aaa; margin-top:15px;">By joining, you agree to save lives.</p>
+    </div>
+
+    <div id="dashboardSection" class="hidden">
+        <div style="text-align: center;"><span id="status" class="status-badge">🔴 Offline</span></div>
+        <div id="map"></div>
+
+        <h3 style="font-size: 16px; color: #57606f; margin-bottom: 10px;">🔔 Live Alerts</h3>
+        <div id="notifications">
+            <div style="text-align: center; padding: 20px; color: #a4b0be; background: #f7f8fa; border-radius: 12px; border: 2px dashed #e1e1e1;">
+                Scanning for emergencies...<br><small>Stay close to your phone.</small>
+            </div>
+        </div>
+
+        <button onclick="triggerEmergency()" style="background: #2f3542; margin-top: 30px; opacity: 0.8; font-size: 14px;">⚠️ Simulation: Request Blood</button>
+    </div>
+    
+    <div class="footer">v2.0 • Ready for Deployment</div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    let userId = null;
+    let ws = null;
+    let map = null;
+    let userMarker = null;
+    let myLat = 28.6139; 
+    let myLng = 77.2090;
+
+    // 1. REGISTER (Updated to use Relative Path)
+    function registerUser() {
+        const name = document.getElementById("name").value;
+        const phone = document.getElementById("phone").value;
+        const group = document.getElementById("bloodGroup").value;
+        const btn = document.getElementById("joinBtn");
+
+        if(!name || !group) { alert("Please fill details!"); return; }
+
+        btn.innerText = "📍 Locating you...";
+        btn.disabled = true;
+
+        if (!navigator.geolocation) { alert("Geolocation not supported"); return; }
+
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            myLat = position.coords.latitude;
+            myLng = position.coords.longitude;
+            
+            try {
+                // SMART PATH: Uses "/" instead of http://127.0.0.1:8000
+                const response = await fetch("/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name: name,
+                        phone: phone || "0000000000",
+                        blood_group: group,
+                        location: { type: "Point", coordinates: [myLng, myLat] },
+                        is_active: true
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    userId = data.id;
+                    document.getElementById("registerSection").classList.add("hidden");
+                    document.getElementById("dashboardSection").classList.remove("hidden");
+                    initMap(myLat, myLng);
+                    connectWebSocket(userId);
+                } else {
+                    alert("Error: " + data.detail);
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Server Error");
+                btn.disabled = false;
+            }
+        });
+    }
+
+    function initMap(lat, lng) {
+        document.getElementById("map").style.display = "block";
+        map = L.map('map').setView([lat, lng], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        userMarker = L.marker([lat, lng]).addTo(map).bindPopup("<b>You are here</b>").openPopup();
+    }
+
+    // 2. WEBSOCKET (Updated for Cloud Compatibility)
+    function connectWebSocket(id) {
+        // Auto-detect if we are on HTTP or HTTPS
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
+        
+        ws = new WebSocket(`${protocol}//${host}/ws/${id}`);
+
+        ws.onopen = () => {
+            const s = document.getElementById("status");
+            s.innerText = "🟢 Online & Active";
+            s.className = "status-badge status-online";
+        };
+
+        ws.onmessage = (event) => {
+            const notifDiv = document.getElementById("notifications");
+            if(notifDiv.innerText.includes("Scanning")) notifDiv.innerHTML = "";
+
+            const alertBox = document.createElement("div");
+            alertBox.className = "alert-box";
+            alertBox.innerHTML = `
+                <div style="font-weight:600; font-size:14px;">🚨 EMERGENCY ALERT</div>
+                <div style="margin:5px 0; color:#555;">${event.data}</div>
+                <button onclick="acceptRequest()" class="hero-btn">🏃‍♂️ I'm Coming!</button>
+            `;
+            notifDiv.prepend(alertBox);
+
+            // Simulation Map Update
+            const hospitalLat = myLat + 0.0020; 
+            const hospitalLng = myLng + 0.0020;
+            var redIcon = new L.Icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/markers/marker-icon-2x-red.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34]
+            });
+            L.marker([hospitalLat, hospitalLng], {icon: redIcon}).addTo(map).bindPopup("<b>🏥 EMERGENCY</b>").openPopup();
+            L.polyline([[myLat, myLng], [hospitalLat, hospitalLng]], {color: '#ff4757', weight: 4, dashArray: '10, 10'}).addTo(map);
+            map.fitBounds([[myLat, myLng], [hospitalLat, hospitalLng]], {padding: [50,50]});
+        };
+    }
+
+    // 3. ACCEPT (Relative Path)
+    async function acceptRequest() {
+        const name = document.getElementById("name").value;
+        const response = await fetch("/accept-request", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ request_id: "dummy_123", donor_id: userId, donor_name: name })
+        });
+        const data = await response.json();
+        alert("❤️ " + data.message);
+    }
+
+    // 4. TRIGGER (Relative Path)
+    async function triggerEmergency() {
+        await fetch("/request-blood", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                requester_name: "City Hospital",
+                blood_group_needed: "O+",
+                location: { type: "Point", coordinates: [myLng, myLat] } 
+            })
+        });
+    }
+</script>
+</body>
+</html>
