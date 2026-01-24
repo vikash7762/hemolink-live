@@ -30,3 +30,14 @@ class BloodRequestCreate(BaseModel):
     requester_name: str
     blood_group_needed: str
     location: Location
+
+# -------------------------------------------
+# 4. Accept Request Schema (The Response)
+# NEW: This handles the data when a donor accepts!
+# -------------------------------------------
+class AcceptRequest(BaseModel):
+    request_id: str
+    donor_id: str
+    donor_name: str
+    latitude: float   # <--- We need these to draw the Blue Marker
+    longitude: float  # <--- We need these to draw the Blue Marker

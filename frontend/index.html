@@ -175,7 +175,7 @@
         <button onclick="triggerEmergency()" style="background: #2f3542; margin-top: 30px; opacity: 0.8; font-size: 14px;">⚠️ Simulation: Request Blood</button>
     </div>
     
-    <div class="footer">v2.0 • Ready for Deployment</div>
+    <div class="footer">v2.1 • Live Tracking Enabled</div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -188,7 +188,7 @@
     let myLat = 28.6139; 
     let myLng = 77.2090;
 
-    // 1. REGISTER (Updated to use Relative Path)
+    // 1. REGISTER
     function registerUser() {
         const name = document.getElementById("name").value;
         const phone = document.getElementById("phone").value;
@@ -207,7 +207,6 @@
             myLng = position.coords.longitude;
             
             try {
-                // SMART PATH: Uses "/" instead of http://127.0.0.1:8000
                 const response = await fetch("/register", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -246,9 +245,8 @@
         userMarker = L.marker([lat, lng]).addTo(map).bindPopup("<b>You are here</b>").openPopup();
     }
 
-    // 2. WEBSOCKET (Updated for Cloud Compatibility)
+    // 2. WEBSOCKET
     function connectWebSocket(id) {
-        // Auto-detect if we are on HTTP or HTTPS
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const host = window.location.host;
         
@@ -288,19 +286,43 @@
         };
     }
 
-    // 3. ACCEPT (Relative Path)
+    // 3. ACCEPT (CRITICAL UPDATE: SENDING GPS NOW!)
     async function acceptRequest() {
         const name = document.getElementById("name").value;
-        const response = await fetch("/accept-request", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ request_id: "dummy_123", donor_id: userId, donor_name: name })
-        });
-        const data = await response.json();
-        alert("❤️ " + data.message);
+        const btn = document.querySelector(".hero-btn");
+        
+        // Show loading state
+        if(btn) {
+            btn.innerText = "🚀 Confirming...";
+            btn.disabled = true;
+        }
+
+        try {
+            const response = await fetch("/accept-request", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    request_id: "dummy_123",
+                    donor_id: userId,
+                    donor_name: name,
+                    latitude: myLat,  // <--- Sending Real GPS
+                    longitude: myLng  // <--- Sending Real GPS
+                })
+            });
+            
+            const data = await response.json();
+            alert("❤️ " + data.message);
+            
+            // Optional: Draw a route on the donor's map too
+            L.polyline([[myLat, myLng], [myLat + 0.01, myLng + 0.01]], {color: 'blue', dashArray: '5, 10'}).addTo(map);
+            
+        } catch (e) {
+            alert("Error communicating with hospital.");
+            if(btn) btn.disabled = false;
+        }
     }
 
-    // 4. TRIGGER (Relative Path)
+    // 4. TRIGGER
     async function triggerEmergency() {
         await fetch("/request-blood", {
             method: "POST",

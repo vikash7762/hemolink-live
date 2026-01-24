@@ -1,14 +1,13 @@
 from fastapi import APIRouter
 from app.database import requests_collection, users_collection
-from app.models import BloodRequestCreate
+from app.models import BloodRequestCreate, AcceptRequest  # <--- IMPORTED FROM MODELS
 from datetime import datetime
 from app.routes.websocket import manager
-from pydantic import BaseModel
+import json  # <--- NEW: Needed to send data packets
 
-# --- CRITICAL CHANGE: We use "router", NOT "app" ---
 router = APIRouter()
 
-@router.post("/request-blood")  # <--- Make sure this says "router"
+@router.post("/request-blood") 
 async def create_blood_request(request: BloodRequestCreate):
     # 1. Save the Request
     req_data = request.dict()
@@ -48,27 +47,30 @@ async def create_blood_request(request: BloodRequestCreate):
     }
 
 # ---------------------------------------------------------
-# NEW: Handle the "I'm Coming" Button Click
+# NEW: Handle the "I'm Coming" Button Click (WITH GPS!)
 # ---------------------------------------------------------
 
-# 1. Define the input model
-class AcceptRequest(BaseModel):
-    request_id: str
-    donor_id: str
-    donor_name: str
-
-# 2. The "I'm Coming" Endpoint (Updated to Notify Hospital)
 @router.post("/accept-request")
 async def accept_blood_request(data: AcceptRequest):
-    print(f"✅ HERO FOUND: {data.donor_name} is on the way!")
+    print(f"✅ HERO FOUND: {data.donor_name} is coming from {data.latitude}, {data.longitude}")
     
-    # NEW: Notify the Hospital Admin via WebSocket
+    # 1. Create a Data Packet (JSON)
+    # This bundles the name and location together
+    response_data = {
+        "event": "donor_coming",
+        "name": data.donor_name,
+        "lat": data.latitude,
+        "lng": data.longitude
+    }
+
+    # 2. Notify the Hospital Admin via WebSocket
+    # We send the packet as a STRING so the frontend can parse it
     try:
         await manager.send_personal_message(
-            f"✅ DONOR FOUND: {data.donor_name} is coming!", 
+            json.dumps(response_data), 
             "hospital_admin"
         )
     except:
-        print("Hospital not connected via WebSocket (Is the Hospital Tab open?)")
+        print("Hospital not connected via WebSocket")
 
-    return {"message": "Thank you! The hospital has been notified."}
+    return {"message": "Thank you! The hospital sees your location now."}
