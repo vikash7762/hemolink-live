@@ -1,339 +1,254 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HemoLink - Life Saver</title>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    
-    <style>
-        /* MODERN UI VARIABLES */
-        :root {
-            --primary: #ff4757;
-            --primary-dark: #e84118;
-            --glass: rgba(255, 255, 255, 0.95);
-        }
-
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background: #f1f2f6; 
-            margin: 0; 
-            min-height: 100vh;
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            padding: 20px;
-        }
-
-        .phone-frame {
-            width: 100%;
-            max-width: 400px;
-            background: var(--glass);
-            padding: 30px;
-            border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.5);
-        }
-
-        /* HEADER */
-        .header { text-align: center; margin-bottom: 30px; }
-        .logo { font-size: 40px; margin-bottom: 5px; display: block; animation: heartbeat 2s infinite; }
-        h1 { margin: 0; color: #2f3542; font-weight: 600; letter-spacing: -1px; }
-        p.subtitle { color: #a4b0be; margin-top: 5px; font-size: 14px; }
-
-        /* INPUTS */
-        .form-group { margin-bottom: 15px; }
-        input, select {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #dfe4ea;
-            border-radius: 12px;
-            font-size: 15px;
-            background: #fdfdfd;
-            transition: 0.3s;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-        input:focus, select:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(255, 71, 87, 0.1);
-        }
-
-        /* BUTTONS */
-        button {
-            width: 100%;
-            padding: 16px;
-            background: var(--primary);
-            color: white;
-            font-weight: 600;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 10px;
-            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
-        }
-        button:hover { background: var(--primary-dark); transform: translateY(-2px); }
-        button:disabled { background: #ced6e0; cursor: not-allowed; box-shadow: none; transform: none;}
-
-        /* ANIMATIONS */
-        @keyframes heartbeat {
-            0% { transform: scale(1); }
-            10% { transform: scale(1.1); }
-            20% { transform: scale(1); }
-            100% { transform: scale(1); }
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        #dashboardSection { animation: slideUp 0.5s ease; }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 6px 15px;
-            background: #eccc68;
-            color: #fff;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        .status-online { background: #2ed573; box-shadow: 0 2px 10px rgba(46, 213, 115, 0.3); }
-
-        /* MAP & ALERTS */
-        #map { 
-            height: 280px; 
-            width: 100%; 
-            border-radius: 16px; 
-            margin-bottom: 20px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            border: 4px solid white;
-        }
-
-        .alert-box {
-            background: #fff0f1;
-            border-left: 5px solid var(--primary);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            animation: slideUp 0.3s ease;
-        }
-        .hero-btn { background: white; color: var(--primary); border: 2px solid var(--primary); margin-top: 10px; }
-        .hero-btn:hover { background: var(--primary); color: white; }
-
-        .hidden { display: none; }
-        .footer { text-align: center; margin-top: 20px; font-size: 11px; color: #ccc; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101426">
+<title>HemoLink | Donor Network</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1020;--panel:#171b30;--panel2:#1d2239;--red:#ff4566;--red2:#ff6b79;--text:#f7f7fb;--muted:#9ca5c2;--line:rgba(255,255,255,.09);--green:#3de0a1}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:30px 16px;color:var(--text);font-family:"DM Sans",sans-serif;background:radial-gradient(ellipse at 10% 0%,#36203d 0,transparent 38%),radial-gradient(ellipse at 100% 100%,#132c49 0,transparent 38%),var(--bg)}
+button,input,select{font:inherit}
+button{cursor:pointer;transition:.2s}
+button:disabled{opacity:.55;cursor:not-allowed;transform:none}
+button:hover:not(:disabled){transform:translateY(-2px)}
+.shell{width:100%;max-width:1100px;margin:auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:26px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#ff4566,#a92854);box-shadow:0 8px 28px #ff456633;font-size:25px}
+.brand h1{font:800 25px Manrope,sans-serif;margin:0;letter-spacing:-1px}
+.brand p{color:var(--muted);margin:4px 0 0;font-size:12px}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:30px;padding:9px 13px;color:var(--muted);font-size:12px;background:#ffffff06}
+.dot{width:8px;height:8px;border-radius:50%;background:#f2b84b}
+.dot.online{background:var(--green);box-shadow:0 0 12px #3de0a188}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.85fr);gap:20px;align-items:start}
+.card{background:linear-gradient(145deg,#1b2036f2,#14182bf5);border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:0 20px 60px #0002;min-width:0}
+.eyebrow{color:var(--red2);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+h2{font:800 26px Manrope,sans-serif;letter-spacing:-.8px;margin:10px 0}
+.description{color:var(--muted);font-size:14px;line-height:1.7;margin:0 0 23px}
+.form-group{margin-bottom:15px}
+label{display:block;color:#d7dbee;font-size:12px;font-weight:600;margin-bottom:8px}
+input,select{width:100%;padding:14px 15px;color:var(--text);background:#0e1223;border:1px solid #ffffff17;border-radius:12px;outline:none}
+input:focus,select:focus{border-color:var(--red);box-shadow:0 0 0 3px #ff45661b}
+select option{background:#171b30}
+.primary,.secondary{width:100%;border:0;border-radius:12px;padding:15px;font-weight:700}
+.primary{color:white;background:linear-gradient(110deg,#ff4566,#e83358);box-shadow:0 8px 25px #ff456625}
+.secondary{background:#ffffff0b;color:#fff;border:1px solid var(--line)}
+.note{color:var(--muted);font-size:12px;line-height:1.6;margin:14px 0 0}
+.hidden{display:none!important}
+.profile{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.avatar{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:#ff45661a;font-size:24px}
+.profile h3{margin:0 0 4px;font:700 16px Manrope,sans-serif}
+.profile p{margin:0;color:var(--muted);font-size:12px}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 13px}
+.section-title h3{font:700 15px Manrope,sans-serif;margin:0}
+.small-tag{font-size:10px;color:var(--green);border:1px solid #3de0a144;background:#3de0a10c;padding:6px 9px;border-radius:20px}
+#map{height:260px;width:100%;border:1px solid var(--line);border-radius:16px;overflow:hidden;z-index:1}
+.alert-list{display:grid;gap:12px}
+.empty{border:1px dashed #ffffff20;border-radius:15px;padding:24px 16px;text-align:center;color:var(--muted);font-size:13px;line-height:1.8}
+.alert-box{border:1px solid #ff456647;background:linear-gradient(135deg,#ff456614,#ffffff04);border-radius:16px;padding:16px;animation:rise .3s ease}
+.alert-heading{display:flex;align-items:center;gap:9px;color:#ff8295;font-weight:800;font-size:13px}
+.alert-message{color:#e6e9f5;font-size:13px;line-height:1.6;margin:10px 0}
+.alert-box .primary{padding:12px;font-size:13px}
+.footer{text-align:center;color:#626c89;font-size:11px;margin:25px 0 0}
+.side-card{margin-top:16px}
+.safety{display:flex;gap:12px;color:var(--muted);font-size:12px;line-height:1.7}
+.safety strong{color:#f5f6fc}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:760px){body{padding:18px 12px}.layout{grid-template-columns:1fr}.card{padding:20px}.topbar{align-items:flex-start}.brand h1{font-size:22px}.topbar>.pill{font-size:10px}.side-card{margin-top:0}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
+<main class="shell">
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon">🩸</div>
+    <div><h1>HemoLink</h1><p>Every donor can make a difference.</p></div>
+  </div>
+  <div class="pill"><span id="statusDot" class="dot"></span><span id="status">Not registered</span></div>
+</header>
 
-<div class="phone-frame">
-    <div class="header">
-        <span class="logo">🩸</span>
-        <h1>HemoLink</h1>
-        <p class="subtitle">Emergency Blood Network</p>
+<div class="layout">
+<section class="card">
+  <div id="registerSection">
+    <div class="eyebrow">Become someone's hero</div>
+    <h2>Donate blood.<br>Share hope.</h2>
+    <p class="description">Join the local donor network to receive emergency blood requests when people need help.</p>
+    <form id="registerForm">
+      <div class="form-group"><label for="name">Full name</label><input id="name" type="text" placeholder="Enter your full name" autocomplete="name" required></div>
+      <div class="form-group"><label for="phone">Mobile number</label><input id="phone" type="tel" placeholder="Enter mobile number" autocomplete="tel" inputmode="tel"></div>
+      <div class="form-group"><label for="bloodGroup">Your blood group</label>
+        <select id="bloodGroup" required>
+          <option value="">Select blood group</option><option>O+</option><option>O-</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option>
+        </select>
+      </div>
+      <button class="primary" type="submit" id="joinBtn">Enable location & join →</button>
+    </form>
+    <p class="note">📍 Your location helps match nearby donors with emergency requests. Allow location access when prompted.</p>
+  </div>
+
+  <div id="dashboardSection" class="hidden">
+    <div class="profile">
+      <div class="avatar">🦸</div>
+      <div><h3 id="welcomeName">Welcome, donor</h3><p id="donorMeta">Your donor profile is active</p></div>
     </div>
+    <div class="pill"><span class="dot online"></span> Available for alerts</div>
+    <div class="section-title"><h3>📍 Your location</h3><span class="small-tag">GPS</span></div>
+    <div id="map"></div>
+    <p class="note">Keep this page open to receive live emergency notifications.</p>
+    <button id="simulationBtn" class="secondary" type="button" style="margin-top:20px">Test emergency request</button>
+  </div>
+</section>
 
-    <div id="registerSection">
-        <div class="form-group"><input type="text" id="name" placeholder="Enter Full Name"></div>
-        <div class="form-group"><input type="text" id="phone" placeholder="Mobile Number"></div>
-        <div class="form-group">
-            <select id="bloodGroup">
-                <option value="">Select Blood Group</option>
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
-                <option value="A+">A+</option>
-                <option value="A-">A-</option>
-                <option value="B+">B+</option>
-                <option value="B-">B-</option>
-                <option value="AB+">AB+</option>
-                <option value="AB-">AB-</option>
-            </select>
-        </div>
-        <button onclick="registerUser()" id="joinBtn">Join Network</button>
-        <p style="text-align:center; font-size:12px; color:#aaa; margin-top:15px;">By joining, you agree to save lives.</p>
+<section>
+  <div class="card">
+    <div class="eyebrow">Live response network</div>
+    <h2 style="font-size:22px">Emergency alerts</h2>
+    <p class="description" style="margin-bottom:18px">Nearby requests will appear here when delivered by the server.</p>
+    <div id="notifications" class="alert-list">
+      <div class="empty">🛡️<br><strong style="color:#f2f3fa">You're not connected yet</strong><br>Join the network to start receiving alerts.</div>
     </div>
-
-    <div id="dashboardSection" class="hidden">
-        <div style="text-align: center;"><span id="status" class="status-badge">🔴 Offline</span></div>
-        <div id="map"></div>
-
-        <h3 style="font-size: 16px; color: #57606f; margin-bottom: 10px;">🔔 Live Alerts</h3>
-        <div id="notifications">
-            <div style="text-align: center; padding: 20px; color: #a4b0be; background: #f7f8fa; border-radius: 12px; border: 2px dashed #e1e1e1;">
-                Scanning for emergencies...<br><small>Stay close to your phone.</small>
-            </div>
-        </div>
-
-        <button onclick="triggerEmergency()" style="background: #2f3542; margin-top: 30px; opacity: 0.8; font-size: 14px;">⚠️ Simulation: Request Blood</button>
-    </div>
-    
-    <div class="footer">v2.1 • Live Tracking Enabled</div>
+  </div>
+  <div class="card side-card">
+    <div class="safety"><span style="font-size:22px">❤️</span><div><strong>Respond when you're ready.</strong><br>Only accept a request if you're able and willing to donate. Follow hospital instructions and confirm eligibility with medical staff.</div></div>
+  </div>
+</section>
 </div>
+<footer class="footer">HEMOLINK • LIVE BLOOD DONOR NETWORK</footer>
+</main>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
-    let userId = null;
-    let ws = null;
-    let map = null;
-    let userMarker = null;
-    let myLat = 28.6139; 
-    let myLng = 77.2090;
+let userId=null,ws=null,map=null,userMarker=null,myLat=28.6139,myLng=77.2090;
+let reconnectTimer=null, reconnectAttempts=0, latestRequestId=null;
+const $=id=>document.getElementById(id);
 
-    // 1. REGISTER
-    function registerUser() {
-        const name = document.getElementById("name").value;
-        const phone = document.getElementById("phone").value;
-        const group = document.getElementById("bloodGroup").value;
-        const btn = document.getElementById("joinBtn");
-
-        if(!name || !group) { alert("Please fill details!"); return; }
-
-        btn.innerText = "📍 Locating you...";
-        btn.disabled = true;
-
-        if (!navigator.geolocation) { alert("Geolocation not supported"); return; }
-
-        navigator.geolocation.getCurrentPosition(async (position) => {
-            myLat = position.coords.latitude;
-            myLng = position.coords.longitude;
-            
-            try {
-                const response = await fetch("/register", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        name: name,
-                        phone: phone || "0000000000",
-                        blood_group: group,
-                        location: { type: "Point", coordinates: [myLng, myLat] },
-                        is_active: true
-                    })
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    userId = data.id;
-                    document.getElementById("registerSection").classList.add("hidden");
-                    document.getElementById("dashboardSection").classList.remove("hidden");
-                    initMap(myLat, myLng);
-                    connectWebSocket(userId);
-                } else {
-                    alert("Error: " + data.detail);
-                    btn.disabled = false;
-                }
-            } catch (error) {
-                console.error(error);
-                alert("Server Error");
-                btn.disabled = false;
-            }
-        });
+function setStatus(text,online=false){
+  $("status").textContent=text;
+  $("statusDot").classList.toggle("online",online);
+}
+function showError(message){alert(message);}
+function addNotice(title,message,action){
+  const list=$("notifications");
+  if(list.querySelector(".empty")) list.innerHTML="";
+  const box=document.createElement("div");
+  box.className="alert-box";
+  const heading=document.createElement("div");
+  heading.className="alert-heading"; heading.textContent=title;
+  const body=document.createElement("div");
+  body.className="alert-message"; body.textContent=message;
+  box.append(heading,body);
+  if(action) box.append(action);
+  list.prepend(box);
+}
+function initMap(lat,lng){
+  if(map){map.setView([lat,lng],15);if(userMarker)userMarker.setLatLng([lat,lng]);return;}
+  map=L.map("map").setView([lat,lng],15);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; OpenStreetMap contributors"}).addTo(map);
+  userMarker=L.marker([lat,lng]).addTo(map).bindPopup("Your current location").openPopup();
+  setTimeout(()=>map.invalidateSize(),150);
+}
+$("registerForm").addEventListener("submit",registerUser);
+async function registerUser(event){
+  event.preventDefault();
+  const name=$("name").value.trim(),phone=$("phone").value.trim(),group=$("bloodGroup").value,btn=$("joinBtn");
+  if(!name||!group){showError("Please enter your name and select your blood group.");return;}
+  if(!navigator.geolocation){showError("Your browser does not support location access.");return;}
+  btn.disabled=true;btn.textContent="Waiting for location…";
+  navigator.geolocation.getCurrentPosition(async position=>{
+    myLat=position.coords.latitude;myLng=position.coords.longitude;
+    btn.textContent="Joining donor network…";
+    try{
+      const response=await fetch("/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+        name,phone:phone||"0000000000",blood_group:group,
+        location:{type:"Point",coordinates:[myLng,myLat]},is_active:true
+      })});
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(data.detail||"Registration failed.");
+      userId=data.id;
+      if(!userId)throw new Error("Registration succeeded but the server did not return a donor ID.");
+      $("registerSection").classList.add("hidden");
+      $("dashboardSection").classList.remove("hidden");
+      $("welcomeName").textContent="Welcome, "+name;
+      $("donorMeta").textContent="Blood group "+group+" · Donor";
+      setStatus("Connecting…");
+      initMap(myLat,myLng);
+      connectWebSocket(userId);
+    }catch(error){showError(error.message||"Unable to register. Please try again.");btn.disabled=false;btn.textContent="Enable location & join →";}
+  },error=>{
+    btn.disabled=false;btn.textContent="Enable location & join →";
+    showError(error.code===1?"Location permission was denied. Allow location access and try again.":"Unable to get your location. Please try again where GPS is available.");
+  },{enableHighAccuracy:true,timeout:15000,maximumAge:30000});
+}
+function connectWebSocket(id){
+  if(ws&&(ws.readyState===WebSocket.OPEN||ws.readyState===WebSocket.CONNECTING))return;
+  clearTimeout(reconnectTimer);
+  const protocol=location.protocol==="https:"?"wss:":"ws:";
+  ws=new WebSocket(`${protocol}//${location.host}/ws/${encodeURIComponent(id)}`);
+  ws.onopen=()=>{reconnectAttempts=0;setStatus("Online & active",true);};
+  ws.onmessage=event=>{
+    let message=event.data,requestId=null;
+    try{
+      const packet=JSON.parse(event.data);
+      if(typeof packet==="string")message=packet;
+      else{
+        message=packet.message||packet.detail||packet.text||packet.alert||event.data;
+        requestId=packet.request_id||packet.id||null;
+      }
+    }catch(_){}
+    latestRequestId=requestId;
+    const accept=document.createElement("button");
+    accept.className="primary";accept.type="button";accept.textContent="❤️ I'm coming";
+    accept.addEventListener("click",()=>acceptRequest(requestId,accept));
+    addNotice("🚨 Emergency blood request",String(message),accept);
+    if(map){
+      const lat=myLat+0.002,lng=myLng+0.002;
+      L.marker([lat,lng]).addTo(map).bindPopup("Reported emergency location");
+      L.polyline([[myLat,myLng],[lat,lng]],{color:"#ff4566",weight:3,dashArray:"7,8"}).addTo(map);
+      map.fitBounds([[myLat,myLng],[lat,lng]],{padding:[30,30]});
     }
-
-    function initMap(lat, lng) {
-        document.getElementById("map").style.display = "block";
-        map = L.map('map').setView([lat, lng], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        userMarker = L.marker([lat, lng]).addTo(map).bindPopup("<b>You are here</b>").openPopup();
+  };
+  ws.onerror=()=>setStatus("Connection issue");
+  ws.onclose=()=>{
+    setStatus("Reconnecting…");
+    if(userId){
+      const delay=Math.min(15000,1000*Math.pow(2,reconnectAttempts++));
+      reconnectTimer=setTimeout(()=>connectWebSocket(userId),delay);
     }
-
-    // 2. WEBSOCKET
-    function connectWebSocket(id) {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = window.location.host;
-        
-        ws = new WebSocket(`${protocol}//${host}/ws/${id}`);
-
-        ws.onopen = () => {
-            const s = document.getElementById("status");
-            s.innerText = "🟢 Online & Active";
-            s.className = "status-badge status-online";
-        };
-
-        ws.onmessage = (event) => {
-            const notifDiv = document.getElementById("notifications");
-            if(notifDiv.innerText.includes("Scanning")) notifDiv.innerHTML = "";
-
-            const alertBox = document.createElement("div");
-            alertBox.className = "alert-box";
-            alertBox.innerHTML = `
-                <div style="font-weight:600; font-size:14px;">🚨 EMERGENCY ALERT</div>
-                <div style="margin:5px 0; color:#555;">${event.data}</div>
-                <button onclick="acceptRequest()" class="hero-btn">🏃‍♂️ I'm Coming!</button>
-            `;
-            notifDiv.prepend(alertBox);
-
-            // Simulation Map Update
-            const hospitalLat = myLat + 0.0020; 
-            const hospitalLng = myLng + 0.0020;
-            var redIcon = new L.Icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/markers/marker-icon-2x-red.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34]
-            });
-            L.marker([hospitalLat, hospitalLng], {icon: redIcon}).addTo(map).bindPopup("<b>🏥 EMERGENCY</b>").openPopup();
-            L.polyline([[myLat, myLng], [hospitalLat, hospitalLng]], {color: '#ff4757', weight: 4, dashArray: '10, 10'}).addTo(map);
-            map.fitBounds([[myLat, myLng], [hospitalLat, hospitalLng]], {padding: [50,50]});
-        };
-    }
-
-    // 3. ACCEPT (CRITICAL UPDATE: SENDING GPS NOW!)
-    async function acceptRequest() {
-        const name = document.getElementById("name").value;
-        const btn = document.querySelector(".hero-btn");
-        
-        // Show loading state
-        if(btn) {
-            btn.innerText = "🚀 Confirming...";
-            btn.disabled = true;
-        }
-
-        try {
-            const response = await fetch("/accept-request", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    request_id: "dummy_123",
-                    donor_id: userId,
-                    donor_name: name,
-                    latitude: myLat,  // <--- Sending Real GPS
-                    longitude: myLng  // <--- Sending Real GPS
-                })
-            });
-            
-            const data = await response.json();
-            alert("❤️ " + data.message);
-            
-            // Optional: Draw a route on the donor's map too
-            L.polyline([[myLat, myLng], [myLat + 0.01, myLng + 0.01]], {color: 'blue', dashArray: '5, 10'}).addTo(map);
-            
-        } catch (e) {
-            alert("Error communicating with hospital.");
-            if(btn) btn.disabled = false;
-        }
-    }
-
-    // 4. TRIGGER
-    async function triggerEmergency() {
-        await fetch("/request-blood", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                requester_name: "City Hospital",
-                blood_group_needed: "O+",
-                location: { type: "Point", coordinates: [myLng, myLat] } 
-            })
-        });
-    }
+  };
+}
+async function acceptRequest(requestId,btn){
+  const name=$("name").value.trim();
+  btn.disabled=true;btn.textContent="Confirming…";
+  try{
+    const response=await fetch("/accept-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+      request_id:requestId||"dummy_123",donor_id:userId,donor_name:name,latitude:myLat,longitude:myLng
+    })});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.detail||"The hospital could not confirm this response.");
+    btn.textContent="Response submitted ✓";
+    alert("❤️ "+(data.message||"Your response was submitted."));
+  }catch(error){btn.disabled=false;btn.textContent="❤️ I'm coming";showError(error.message||"Error communicating with hospital.");}
+}
+$("simulationBtn").addEventListener("click",triggerEmergency);
+async function triggerEmergency(){
+  const btn=$("simulationBtn");btn.disabled=true;btn.textContent="Sending test request…";
+  try{
+    const response=await fetch("/request-blood",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+      requester_name:"HemoLink Test",blood_group_needed:$("bloodGroup").value||"O+",location:{type:"Point",coordinates:[myLng,myLat]}
+    })});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.detail||"Test request failed.");
+    addNotice("🧪 Test request submitted",data.message||"The server accepted the test request.");
+  }catch(error){showError(error.message||"Could not send the test request.");}
+  finally{btn.disabled=false;btn.textContent="Test emergency request";}
+}
+window.addEventListener("beforeunload",()=>{clearTimeout(reconnectTimer);if(ws)ws.close();});
 </script>
 </body>
 </html>
